@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Lumina — Pricing</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="shortcut icon" href="/images/app-icon.png" type="image/x-icon" />
+
+    <style>
+        .pricing-hero {
+            padding: 12rem 4rem 4rem;
+            text-align: left;
+        }
+
+        .pricing-title {
+            font-size: clamp(4rem, 8vw, 8rem);
+            line-height: 0.9;
+            margin-bottom: 2rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+        }
+
+        .pricing-desc {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            max-width: 500px;
+            font-weight: 300;
+            margin-bottom: 6rem;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            border-top: 1px solid var(--border-subtle);
+            border-bottom: 1px solid var(--border-subtle);
+            margin: 0 4rem 10rem;
+        }
+
+        .pricing-tier {
+            padding: 6rem 4rem;
+            position: relative;
+        }
+
+        .pricing-tier:first-child {
+            border-right: 1px solid var(--border-subtle);
+        }
+
+        .tier-name {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .tier-price {
+            font-family: var(--font-heading);
+            font-size: 4rem;
+            margin-bottom: 3rem;
+        }
+
+        .tier-price span {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+        }
+
+        .tier-features {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 4rem;
+        }
+
+        .tier-features li {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 1024px) {
+            .pricing-hero { padding: 8rem 2rem 2rem; }
+            .pricing-grid { grid-template-columns: 1fr; margin: 0 2rem 6rem; border-bottom: none; }
+            .pricing-tier:first-child { border-right: none; border-bottom: 1px solid var(--border-subtle); }
+            .pricing-tier { padding: 4rem 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── Navigation ── -->
+    <nav>
+        <a href="/" class="brand">Lumina</a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/#experience">Experience</a>
+            <a href="/pricing">Pricing</a>
+        </div>
+        <a href="/portal" class="btn-magnetic" style="padding: 1.2rem 2.5rem; font-size: 0.75rem; background: var(--text-light); color: #000;">
+            Host Portal
+        </a>
+    </nav>
+
+    <!-- ── Pricing Hero ── -->
+    <section class="pricing-hero">
+        <h1 class="pricing-title">Simple.<br>Transparent.</h1>
+        <p class="pricing-desc">
+            Choose the tier that fits your event. No hidden fees, no subscriptions. Just pure, unfiltered memories.
+        </p>
+    </section>
+
+    <!-- ── Pricing Grid ── -->
+    <div class="pricing-grid">
+        
+        <div class="pricing-tier">
+            <h2 class="tier-name">Standard</h2>
+            <div class="tier-price">$0 <span>/ event</span></div>
+            <ul class="tier-features">
+                <li>Up to 50 guests</li>
+                <li>Unlimited photo uploads</li>
+                <li>Standard 24-hour darkroom lock</li>
+                <li>Basic digital gallery</li>
+            </ul>
+            <a href="/portal" class="btn-magnetic btn-outline" style="width: 100%;">START FREE</a>
+        </div>
+
+        <div class="pricing-tier">
+            <h2 class="tier-name">Premium</h2>
+            <div class="tier-price">$99 <span>/ event</span></div>
+            <ul class="tier-features">
+                <li>Unlimited guests</li>
+                <li>Live venue projection slideshow</li>
+                <li>Custom branding & sponsor placement</li>
+                <li>High-resolution raw downloads</li>
+            </ul>
+            <a href="/portal" class="btn-magnetic" style="width: 100%;">UPGRADE</a>
+        </div>
+
+    </div>
+
+    <!-- Editorial Micro-Interactions Script -->
+    <script src="/js/editorial.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,10 @@
+node_modules
+.git
+.gitignore
+.env
+data/events/*
+data/database.sqlite
+data/database.sqlite-journal
+Dockerfile
+.dockerignore
+fly.toml

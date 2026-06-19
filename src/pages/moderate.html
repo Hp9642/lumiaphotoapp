@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Lumina — Live Darkroom Review</title>
+    <meta name="description" content="Host swipe moderation panel for Lumina.">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="shortcut icon" href="/images/app-icon.png" type="image/x-icon" />
+    <style>
+        body, html {
+            background-color: #080707;
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            font-family: var(--font-sans);
+        }
+
+        header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-low);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0B0A0A;
+            z-index: 10;
+        }
+
+        .moderation-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card-deck {
+            position: relative;
+            width: 90%;
+            max-width: 380px;
+            height: 70vh;
+            max-height: 520px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .swipe-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-ice-low);
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            z-index: 5;
+        }
+
+        .swipe-card::after {
+            content: '';
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            right: 1px;
+            bottom: 1px;
+            border: 1px solid var(--border-white-low);
+            border-radius: 15px;
+            pointer-events: none;
+        }
+
+        .swipe-card img {
+            width: 100%;
+            flex: 1;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #000;
+            pointer-events: none;
+        }
+
+        .swipe-card-info {
+            padding: 12px 6px 4px;
+            text-align: center;
+        }
+
+        .swipe-card-uploader {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent-ice);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .swipe-card-note {
+            font-family: var(--font-serif);
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            font-style: italic;
+            margin: 0;
+            line-height: 1.4;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Swiping visual indicators */
+        .swipe-stamp {
+            position: absolute;
+            top: 25px;
+            border: 3px solid;
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-size: 1.4rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transform: rotate(-12deg);
+            opacity: 0;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .stamp-approve {
+            right: 25px;
+            border-color: #6A997E;
+            color: #6A997E;
+            transform: rotate(12deg);
+        }
+
+        .stamp-reject {
+            left: 25px;
+            border-color: #CC5A50;
+            color: #CC5A50;
+            transform: rotate(-12deg);
+        }
+
+        /* Bottom Moderation HUD Actions */
+        .moderate-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 1.5rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 100%);
+            z-index: 10;
+        }
+
+        .moderate-btn {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            border: 1px solid;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: all 0.25s ease;
+            background: rgba(12, 11, 10, 0.9);
+        }
+
+        .btn-reject {
+            border-color: rgba(204, 90, 80, 0.3);
+            color: #CC5A50;
+        }
+
+        .btn-reject:hover {
+            background: #CC5A50;
+            color: #FFF;
+            border-color: #CC5A50;
+            transform: scale(1.06);
+        }
+
+        .btn-approve {
+            border-color: rgba(106, 153, 126, 0.3);
+            color: #6A997E;
+        }
+
+        .btn-approve:hover {
+            background: #6A997E;
+            color: #FFF;
+            border-color: #6A997E;
+            transform: scale(1.06);
+        }
+
+        /* Password Verification Bar */
+        .password-prompt-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-ice-low);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            max-width: 360px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            z-index: 50;
+        }
+    </style>
+</head>
+<body>
+    <div class="film-grain"></div>
+
+    <!-- Header bar -->
+    <header>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <svg class="ui-icon" style="stroke: var(--accent-ice); width: 20px; height: 20px;" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            <span style="font-family: var(--font-serif); font-size: 1.4rem; color: var(--accent-ice);">Lumina</span>
+        </div>
+        <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-secondary); font-weight: 600;">Darkroom Review</span>
+        <a href="/manage" class="btn-pill btn-pill-secondary" style="padding: 0.5rem 1.2rem; font-size: 0.7rem;">Dashboard</a>
+    </header>
+
+    <!-- Main review deck -->
+    <div class="moderation-container">
+        <!-- Password prompt overlay -->
+        <div class="password-prompt-bar" id="authContainer">
+            <h4 style="font-family: var(--font-serif); font-size: 1.5rem; color: var(--accent-ice); margin-bottom: 0.5rem;">Authentication</h4>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1.2rem;">Enter Host Password to start reviewing event rolls.</p>
+            <input type="password" id="moderatePasswordInput" class="text-input" style="width: 100%; margin-bottom: 1.2rem; text-align: center;" placeholder="Password" required>
+            <button class="btn-pill btn-pill-primary" id="startReviewBtn" style="width: 100%; padding: 0.7rem;">Enter Darkroom</button>
+        </div>
+
+        <!-- Cards deck (hidden until authorized) -->
+        <div class="card-deck" id="cardDeck" style="display: none;">
+            <div id="deckStatus" style="font-family: var(--font-serif); font-size: 1.8rem; color: var(--text-muted); text-align: center;">Loading rolls...</div>
+            
+            <!-- Cards generated dynamically -->
+        </div>
+    </div>
+
+    <!-- Bottom buttons -->
+    <div class="moderate-actions" id="actionPanel" style="display: none;">
+        <button class="moderate-btn btn-reject" id="rejectBtn" title="Reject / Delete">
+            <svg class="ui-icon" style="width: 24px; height: 24px;" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <button class="moderate-btn btn-approve" id="approveBtn" title="Approve / Keep">
+            <svg class="ui-icon" style="width: 24px; height: 24px;" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </button>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">
+        <div class="message"></div>
+    </div>
+
+    <script>
+        let photoQueue = [];
+        let hostPassword = "";
+        let isReviewing = false;
+        const authContainer = document.getElementById('authContainer');
+        const cardDeck = document.getElementById('cardDeck');
+        const actionPanel = document.getElementById('actionPanel');
+        const deckStatus = document.getElementById('deckStatus');
+        const passwordInput = document.getElementById('moderatePasswordInput');
+        const toastElement = document.getElementById('toast');
+
+        // Show toast
+        function showToast(message) {
+            toastElement.querySelector('.message').innerText = message;
+            toastElement.classList.add('active');
+            setTimeout(() => {
+                toastElement.classList.remove('active');
+            }, 2500);
+        }
+
+        // Authenticate
+        document.getElementById('startReviewBtn').addEventListener('click', () => {
+            const val = passwordInput.value.trim();
+            if (!val) {
+                showToast("Password required");
+                return;
+            }
+            hostPassword = val;
+            authContainer.style.display = 'none';
+            cardDeck.style.display = 'flex';
+            actionPanel.style.display = 'flex';
+            loadPhotos();
+        });
+
+        // Fetch files
+        function loadPhotos() {
+            fetch('/api/photos?pageSize=1000')
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.files || data.files.length === 0) {
+                        deckStatus.innerText = "No developed exposures to review.";
+                        return;
+                    }
+                    // Filter out videos and already approved photos
+                    photoQueue = data.files.filter(f => f.contentType.startsWith('image') && f.isApproved === 0);
+                    if (photoQueue.length === 0) {
+                        deckStatus.innerText = "No photos to moderate.";
+                        return;
+                    }
+
+                    deckStatus.style.display = 'none';
+                    renderTopCard();
+                })
+                .catch(err => {
+                    console.error(err);
+                    deckStatus.innerText = "Failed to connect to darkroom.";
+                });
+        }
+
+        // Render top card
+        function renderTopCard() {
+            // Remove any existing cards
+            const oldCards = cardDeck.querySelectorAll('.swipe-card');
+            oldCards.forEach(c => c.remove());
+
+            if (photoQueue.length === 0) {
+                deckStatus.innerText = "All rolls reviewed. Refresh gallery soon.";
+                deckStatus.style.display = 'block';
+                return;
+            }
+
+            const currentPhoto = photoQueue[0];
+            const card = document.createElement('div');
+            card.className = 'swipe-card';
+
+            const img = document.createElement('img');
+            img.src = currentPhoto.url;
+            card.appendChild(img);
+
+            // Extract uploader
+            let uploaderName = "Guest";
+            try {
+                const tags = JSON.parse(currentPhoto.metaTags || "[]");
+                const uploaderTag = tags.find(t => t.startsWith("uploader:"));
+                if (uploaderTag) {
+                    uploaderName = uploaderTag.split(":")[1];
+                }
+            } catch(e) {}
+
+            const info = document.createElement('div');
+            info.className = 'swipe-card-info';
+            
+            const uploader = document.createElement('span');
+            uploader.className = 'swipe-card-uploader';
+            uploader.innerText = uploaderName;
+            info.appendChild(uploader);
+
+            if (currentPhoto.note) {
+                const note = document.createElement('p');
+                note.className = 'swipe-card-note';
+                note.innerText = `"${currentPhoto.note}"`;
+                info.appendChild(note);
+            }
+            card.appendChild(info);
+
+            // Add approve/reject stamps
+            const stampApprove = document.createElement('div');
+            stampApprove.className = 'swipe-stamp stamp-approve';
+            stampApprove.innerText = 'Keep';
+            card.appendChild(stampApprove);
+
+            const stampReject = document.createElement('div');
+            stampReject.className = 'swipe-stamp stamp-reject';
+            stampReject.innerText = 'Delete';
+            card.appendChild(stampReject);
+
+            cardDeck.appendChild(card);
+            bindSwipeEvents(card);
+        }
+
+        // Swipe animations and touch gestures
+        function bindSwipeEvents(card) {
+            let startX = 0;
+            let currentX = 0;
+            let isMoving = false;
+
+            const stampApprove = card.querySelector('.stamp-approve');
+            const stampReject = card.querySelector('.stamp-reject');
+
+            function onStart(e) {
+                startX = e.touches ? e.touches[0].clientX : e.clientX;
+                isMoving = true;
+                card.style.transition = 'none';
+            }
+
+            function onMove(e) {
+                if (!isMoving) return;
+                currentX = e.touches ? e.touches[0].clientX : e.clientX;
+                const deltaX = currentX - startX;
+                
+                // Tilt and translate card
+                const rotate = deltaX * 0.08;
+                card.style.transform = `translateX(${deltaX}px) rotate(${rotate}deg)`;
+
+                // Opacity of stamps
+                if (deltaX > 0) { // dragging right (Approve)
+                    stampApprove.style.opacity = Math.min(deltaX / 100, 1);
+                    stampReject.style.opacity = 0;
+                } else { // dragging left (Reject)
+                    stampReject.style.opacity = Math.min(Math.abs(deltaX) / 100, 1);
+                    stampApprove.style.opacity = 0;
+                }
+            }
+
+            function onEnd() {
+                if (!isMoving) return;
+                isMoving = false;
+                const deltaX = currentX - startX;
+                card.style.transition = 'transform 0.4s ease, opacity 0.4s ease';
+
+                if (deltaX > 120) {
+                    // Approve (Swipe right)
+                    swipeCardAway(1);
+                } else if (deltaX < -120) {
+                    // Reject (Swipe left)
+                    swipeCardAway(-1);
+                } else {
+                    // Bounce back
+                    card.style.transform = 'none';
+                    stampApprove.style.opacity = 0;
+                    stampReject.style.opacity = 0;
+                }
+            }
+
+            card.addEventListener('mousedown', onStart);
+            card.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onEnd);
+
+            card.addEventListener('touchstart', onStart);
+            card.addEventListener('touchmove', onMove);
+            window.addEventListener('touchend', onEnd);
+        }
+
+        function swipeCardAway(direction) {
+            const card = cardDeck.querySelector('.swipe-card');
+            if (!card) return;
+
+            card.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+            if (direction > 0) {
+                card.style.transform = 'translateX(400px) rotate(30deg)';
+                card.style.opacity = '0';
+                setTimeout(() => approvePhoto(), 300);
+            } else {
+                card.style.transform = 'translateX(-400px) rotate(-30deg)';
+                card.style.opacity = '0';
+                setTimeout(() => rejectPhoto(), 300);
+            }
+        }
+
+        function approvePhoto() {
+            if (photoQueue.length === 0) return;
+            const targetPhoto = photoQueue[0];
+            const eventId = window.location.pathname.split('/')[1] || '';
+
+            fetch(`/api/photos?eventId=${eventId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    files: [{
+                        name: targetPhoto.name,
+                        metadata: { isApproved: 1 }
+                    }]
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                showToast("Approved exposure");
+                photoQueue.shift();
+                renderTopCard();
+            })
+            .catch(err => {
+                console.error(err);
+                showToast("Network error approving exposure");
+                renderTopCard();
+            });
+        }
+
+        function rejectPhoto() {
+            // Trigger Delete on backend
+            if (photoQueue.length === 0) return;
+            const targetPhoto = photoQueue[0];
+            const eventId = window.location.pathname.split('/')[1] || '';
+            fetch(`/api/photos?eventId=${eventId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    files: [{ name: targetPhoto.name }]
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.message === 'OK') {
+                    showToast("Deleted exposure from roll");
+                    photoQueue.shift();
+                    renderTopCard();
+                } else {
+                    showToast("Error deleting: " + (data.details || "Unauthorized"));
+                    // Reset card view
+                    renderTopCard();
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast("Network error deleting exposure");
+                renderTopCard();
+            });
+        }
+
+        // Action buttons triggers
+        document.getElementById('approveBtn').addEventListener('click', () => {
+            swipeCardAway(1);
+        });
+
+        document.getElementById('rejectBtn').addEventListener('click', () => {
+            swipeCardAway(-1);
+        });
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Lumina Gallery</title>
+    <meta name="description" content="View the shared album.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="shortcut icon" href="/images/app-icon.png" type="image/x-icon" />
+</head>
+<body>
+    
+    <nav>
+        <a href="/" class="brand">LUMINA</a>
+        <div class="nav-links">
+            <a href="javascript:void(0)" id="navCameraLink">CAMERA</a>
+            <a href="javascript:void(0)" id="navSlideshowLink">SLIDESHOW</a>
+        </div>
+        <a href="/manage" class="btn-magnetic" style="padding: 0.6rem 1.5rem; font-size: 0.75rem; background: var(--accent-ice); color: #000;" id="navPortalLink">PORTAL</a>
+    </nav>
+
+    <!-- Gallery Header -->
+    <header class="gallery-header">
+        <h1 class="gallery-title" id="galleryTitle">THE COLLECTION</h1>
+        <p class="hero-desc" style="margin: 0 auto; font-family: var(--font-body); letter-spacing: 1px; font-weight: 500;" id="galleryPhotoCount">0 PHOTOS</p>
+        <p style="margin-top: 10px; color: var(--accent-ice); text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; display: none;" id="galleryCountdown">REVEALING IN <span id="countdownTimer">00:00</span></p>
+    </header>
+
+    <!-- Empty State -->
+    <div id="galleryEmpty" style="text-align: center; padding: 4rem; color: var(--text-muted); display: none;">
+        <h2 style="font-family: var(--font-heading); font-weight: 400; font-size: 2rem; margin-bottom: 1rem;">THE DARKROOM IS EMPTY</h2>
+        <p>Invite guests to scan the code and capture moments.</p>
+        <button class="btn-magnetic" style="margin-top: 2rem; border: 1px solid var(--accent-ice); background: transparent; color: var(--accent-ice);" onclick="window.location.href='/' + window.location.pathname.split('/')[1] + '/upload'">OPEN CAMERA</button>
+    </div>
+
+    <!-- Masonry Grid -->
+    <main class="masonry-grid" id="polaroidGrid"></main>
+
+    <!-- Lightbox -->
+    <div id="lightbox" style="position: fixed; inset: 0; background: rgba(10,10,12,0.95); z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column;">
+        <div style="position: absolute; top: 40px; right: 40px; display: flex; gap: 20px;">
+            <button id="lightboxClose" style="background: transparent; border: none; color: #fff; opacity: 0.7;"><svg style="width: 32px; height: 32px;" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </div>
+        <img id="lightboxImg" src="" alt="Photo" style="max-width: 90vw; max-height: 80vh; object-fit: contain;">
+        <div id="lightboxCaption" style="margin-top: 2rem; font-family: var(--font-heading); font-size: 1.2rem; letter-spacing: 1px; color: var(--accent-ice); text-transform: uppercase;"></div>
+        
+        <div style="position: absolute; bottom: 40px; display: flex; gap: 40px;">
+            <button id="lightboxPrev" style="background: transparent; border: none; color: #fff; opacity: 0.7;"><svg style="width: 32px; height: 32px;" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+            <button id="lightboxNext" style="background: transparent; border: none; color: #fff; opacity: 0.7;"><svg style="width: 32px; height: 32px;" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+        </div>
+    </div>
+
+    <div id="toast" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 12px 24px; border-radius: 100px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: none; z-index: 9999;">
+        <div class="message"></div>
+    </div>
+
+    <script src="/js/editorial.js"></script>
+    <script>
+        const eventId = window.location.pathname.split('/')[1];
+        let allPhotos = [];
+        let lightboxIdx = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('navCameraLink').href = '/' + eventId + '/upload';
+            document.getElementById('navSlideshowLink').href = '/' + eventId + '/slideshow';
+            document.getElementById('navPortalLink').href = '/' + eventId + '/manage';
+            fetchEventConfig();
+            fetchGallery();
+            setInterval(fetchGallery, 5000);
+        });
+
+        function fetchEventConfig() {
+            fetch('/api/config?eventId=' + eventId)
+                .then(r => r.json())
+                .then(cfg => {
+                    if (cfg.eventName) {
+                        document.getElementById('galleryTitle').textContent = cfg.eventName.toUpperCase();
+                    }
+                })
+                .catch(e => console.error(e));
+        }
+
+        function fetchGallery() {
+            fetch('/api/photos?eventId=' + eventId)
+                .then(r => r.json())
+                .then(files => {
+                    const prevCount = allPhotos.length;
+                    const newFiles = files.filter(f => !allPhotos.some(a => a.url === f.url));
+                    
+                    if (prevCount === 0 && files.length > 0) {
+                        allPhotos = files;
+                        renderGrid(allPhotos);
+                    } else if (newFiles.length > 0) {
+                        allPhotos = files;
+                        renderNewItems(newFiles);
+                    }
+
+                    document.getElementById('galleryPhotoCount').textContent = `${allPhotos.length} PHOTO${allPhotos.length !== 1 ? 'S' : ''}`;
+                    document.getElementById('galleryEmpty').style.display = allPhotos.length === 0 ? 'block' : 'none';
+                });
+        }
+
+        function renderGrid(photos) {
+            const grid = document.getElementById('polaroidGrid');
+            grid.innerHTML = '';
+            photos.forEach((photo, i) => grid.appendChild(makePolaroid(photo, i)));
+        }
+
+        function renderNewItems(photos) {
+            const grid = document.getElementById('polaroidGrid');
+            photos.forEach((photo, i) => grid.prepend(makePolaroid(photo, i)));
+        }
+
+        function extractUploader(metaTags) {
+            try {
+                const tags = JSON.parse(metaTags || '[]');
+                const t = tags.find(t => t.startsWith('uploader:'));
+                return t ? t.split(':')[1] : null;
+            } catch { return null; }
+        }
+
+        function makePolaroid(photo, idx) {
+            const who = photo.uploaderName || extractUploader(photo.metaTags) || '';
+            const sig = [who, photo.note].filter(Boolean).join(' — ');
+
+            const item = document.createElement('div');
+            item.className = 'masonry-item';
+            // Randomize grid height span for masonry effect
+            const span = Math.floor(Math.random() * 3) + 10;
+            item.style.gridRowEnd = `span ${span}`;
+            item.dataset.idx = allPhotos.indexOf(photo) >= 0 ? allPhotos.indexOf(photo) : idx;
+
+            item.innerHTML = `
+                <img src="${photo.thumbnail || photo.url}" alt="Guest photo" loading="lazy">
+                <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: #fff; font-family: var(--font-body); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; opacity: 0; transition: opacity 0.3s ease;" class="hover-overlay">
+                    ${sig || 'GUEST CAPTURE'}
+                </div>
+            `;
+
+            item.addEventListener('mouseenter', () => item.querySelector('.hover-overlay').style.opacity = '1');
+            item.addEventListener('mouseleave', () => item.querySelector('.hover-overlay').style.opacity = '0');
+            item.addEventListener('click', () => openLightbox(parseInt(item.dataset.idx)));
+            return item;
+        }
+
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightboxImg');
+        const lightboxCap = document.getElementById('lightboxCaption');
+
+        function openLightbox(idx) {
+            lightboxIdx = idx;
+            showLightboxPhoto(idx);
+            lightbox.style.display = 'flex';
+        }
+        function closeLightbox() { lightbox.style.display = 'none'; }
+        function showLightboxPhoto(idx) {
+            const p = allPhotos[idx];
+            if (!p) return;
+            lightboxImg.src = p.url;
+            const who = p.uploaderName || extractUploader(p.metaTags) || 'GUEST';
+            lightboxCap.textContent = who;
+        }
+
+        document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+        document.getElementById('lightboxPrev').addEventListener('click', () => { lightboxIdx = (lightboxIdx - 1 + allPhotos.length) % allPhotos.length; showLightboxPhoto(lightboxIdx); });
+        document.getElementById('lightboxNext').addEventListener('click', () => { lightboxIdx = (lightboxIdx + 1) % allPhotos.length; showLightboxPhoto(lightboxIdx); });
+
+        // Share & Download
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.querySelector('.message').textContent = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+        document.getElementById('shareGalleryBtn').addEventListener('click', () => {
+            navigator.clipboard.writeText(window.location.href).then(() => showToast('LINK COPIED'));
+        });
+        document.getElementById('downloadAllBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            fetch('/api/photos/download', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ eventId })
+            }).then(r => r.blob()).then(b => {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(b); a.download = `lumina-${eventId}.zip`; a.click();
+            });
+        });
+    </script>
+</body>
+</html>

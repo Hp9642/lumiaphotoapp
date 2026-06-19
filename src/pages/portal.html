@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Lumina Portal</title>
+    <meta name="description" content="Manage your Lumina events.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="shortcut icon" href="/images/app-icon.png" type="image/x-icon" />
+</head>
+<body>
+    <nav>
+        <a href="/" class="brand">LUMINA</a>
+        <div class="nav-links">
+            <a href="javascript:void(0)" id="logoutBtn" style="display: none;">LOGOUT</a>
+        </div>
+    </nav>
+
+    <div class="page-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh;">
+        
+        <!-- Auth Section -->
+        <div id="authSection" style="width: 100%; max-width: 400px; text-align: left;">
+            <h1 class="section-title" style="font-size: 2.5rem; margin-bottom: 0.5rem; text-align: center;">PORTAL</h1>
+            <p style="color: var(--text-muted); text-align: center; margin-bottom: 3rem; font-size: 1.1rem; font-weight: 300;">Sign in to manage your darkroom.</p>
+            
+            <form id="authForm">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="authEmail" class="modern-input" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 3rem;">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="authPassword" class="modern-input" required>
+                </div>
+                <button type="submit" class="btn-magnetic" style="width: 100%; background: var(--accent-ice); color: #000;">CONTINUE</button>
+            </form>
+            
+            <p style="margin-top: 2rem; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
+                <span id="authToggleText">Need an account?</span> 
+                <a href="#" id="authToggleBtn" style="color: var(--accent-ice); font-weight: 600; text-decoration: none;">REGISTER</a>
+            </p>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" style="display: none; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4rem;">
+                <div>
+                    <h1 class="section-title" style="margin-bottom: 0;">EVENTS</h1>
+                </div>
+                <button id="createEventBtn" class="btn-magnetic" style="background: transparent; border: 1px solid var(--accent-ice); color: var(--accent-ice);">
+                    NEW EVENT
+                </button>
+            </div>
+
+            <div id="eventsList" style="display: grid; gap: 20px;">
+                <div style="text-align: center; color: var(--text-muted); padding: 3rem 0; font-family: var(--font-heading);">LOADING...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Event Modal -->
+    <div class="fullscreen-overlay" id="createEventModal" style="display: none;">
+        <div style="width: 100%; max-width: 500px; text-align: left; background: var(--bg-card); padding: 3rem; border-radius: 12px;">
+            <h2 style="font-size: 2rem; color: var(--accent-ice); margin-bottom: 2rem; font-family: var(--font-heading); font-weight: 700;">NEW EVENT</h2>
+            <form id="createEventForm">
+                <div class="form-group" style="margin-bottom: 3rem;">
+                    <label class="form-label">Event Name</label>
+                    <input type="text" id="eventName" class="modern-input" placeholder="e.g. Sarah & Joe" required>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="button" class="btn-magnetic" id="cancelCreateBtn" style="flex: 1; background: transparent; border: 1px solid var(--border-subtle); color: #fff;">CANCEL</button>
+                    <button type="submit" class="btn-magnetic" style="flex: 2; background: var(--accent-ice); color: #000;">CREATE</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 12px 24px; border-radius: 100px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: none; z-index: 9999;">
+        <div class="message"></div>
+    </div>
+
+    <script src="/js/editorial.js"></script>
+    <script src="/js/portal.js"></script>
+</body>
+</html>

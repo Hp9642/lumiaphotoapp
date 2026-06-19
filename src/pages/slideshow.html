@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Lumina Slideshow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body { background: #000; overflow: hidden; height: 100vh; width: 100vw; margin: 0; cursor: none; }
+        
+        #bgBlur {
+            position: absolute; inset: 0; z-index: 1;
+            background-size: cover; background-position: center;
+            filter: blur(50px) brightness(0.3);
+            transform: scale(1.1);
+            transition: background-image 1.5s ease;
+        }
+
+        .slide-image {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            object-fit: contain; opacity: 0;
+            transform: scale(1.02);
+            transition: opacity 1.5s ease-in-out, transform 8s ease-out;
+            z-index: 5;
+        }
+        .slide-image.active { opacity: 1; transform: scale(1.0); }
+
+        #slideCaption {
+            position: absolute; bottom: 0; left: 0; right: 0; z-index: 30;
+            padding: 4rem; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            opacity: 0; transition: opacity 1s ease;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        #slideCaption.active { opacity: 1; }
+
+        .caption-uploader {
+            font-family: var(--font-heading); font-size: 1.5rem; color: var(--accent-ice); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem;
+        }
+        .caption-note {
+            font-family: var(--font-body); font-size: 1.2rem; color: var(--text-light); font-weight: 300; max-width: 600px;
+        }
+
+        /* Sponsor Tag */
+        #slideshowSponsor {
+            position: absolute; top: 40px; right: 40px; z-index: 40;
+            font-family: var(--font-heading); font-size: 1.2rem; color: #fff; text-transform: uppercase; letter-spacing: 2px;
+            display: none; padding: 10px 20px; border: 1px solid rgba(255,255,255,0.2); border-radius: 100px; backdrop-filter: blur(10px);
+        }
+        
+        .qr-container {
+            background: #fff; padding: 10px; border-radius: 8px; margin-left: 2rem;
+        }
+
+        /* Controls hidden until hover */
+        .controls {
+            position: absolute; top: 40px; left: 40px; z-index: 50; display: flex; gap: 1rem; opacity: 0; transition: opacity 0.3s;
+        }
+        body:hover .controls { opacity: 1; }
+        .controls button { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .controls button:hover { border-color: var(--accent-ice); color: var(--accent-ice); }
+    </style>
+    <script src="/js/qrcode.min.js"></script>
+</head>
+<body>
+
+    <div id="bgBlur"></div>
+    <div id="slideContainer"></div>
+
+    <div id="slideCaption">
+        <div>
+            <div class="caption-uploader" id="captionUploader">GUEST CAPTURE</div>
+            <div class="caption-note" id="captionNote"></div>
+        </div>
+        <div style="display: flex; align-items: center; text-align: right;">
+            <div>
+                <div style="font-family: var(--font-heading); font-size: 1.5rem; text-transform: uppercase; color: #fff; margin-bottom: 4px;">CAPTURE YOURS</div>
+                <div style="font-size: 0.9rem; color: var(--text-muted);">Scan to enter darkroom</div>
+            </div>
+            <div class="qr-container" id="qrCodeContainer"></div>
+        </div>
+    </div>
+
+    <div id="slideshowSponsor">SPONSORED BY X</div>
+
+    <div class="controls">
+        <button onclick="window.close()" title="Exit"><svg style="width: 24px; height: 24px;" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        <button id="pauseBtn" title="Pause"><svg style="width: 24px; height: 24px;" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg></button>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" style="position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; color: #fff; text-align: center;">
+        <h1 style="font-family: var(--font-heading); font-size: 3rem; margin-bottom: 1rem; color: var(--accent-ice);">THE DARKROOM IS WAITING</h1>
+        <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 3rem;">Scan the code to be the first to capture a moment.</p>
+        <div id="emptyQrContainer" style="background: #fff; padding: 2rem; border-radius: 12px;"></div>
+    </div>
+
+    <script>
+        const eventId = window.location.pathname.split('/')[1];
+        let photos = [];
+        let currentIndex = -1;
+        let isPaused = false;
+        let slideInterval;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            generateQRs();
+            fetchEventConfig();
+            fetchGallery();
+            setInterval(fetchGallery, 5000);
+            
+            document.getElementById('pauseBtn').addEventListener('click', (e) => {
+                isPaused = !isPaused;
+                e.currentTarget.innerHTML = isPaused ? 
+                    `<svg style="width: 24px; height: 24px;" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>` : 
+                    `<svg style="width: 24px; height: 24px;" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>`;
+            });
+        });
+
+        function generateQRs() {
+            const url = window.location.origin + '/' + eventId;
+            new QRCode(document.getElementById("qrCodeContainer"), { text: url, width: 80, height: 80, colorDark: "#000", colorLight: "#fff", correctLevel: QRCode.CorrectLevel.H });
+            new QRCode(document.getElementById("emptyQrContainer"), { text: url, width: 200, height: 200, colorDark: "#000", colorLight: "#fff", correctLevel: QRCode.CorrectLevel.H });
+        }
+
+        function fetchEventConfig() {
+            fetch('/api/config?eventId=' + eventId)
+                .then(r => r.json())
+                .then(cfg => {
+                    if (cfg.sponsorText) {
+                        const s = document.getElementById('slideshowSponsor');
+                        s.textContent = cfg.sponsorText;
+                        s.style.display = 'block';
+                    }
+                }).catch(e => console.error(e));
+        }
+
+        function fetchGallery() {
+            fetch('/api/photos/' + eventId)
+                .then(r => r.json())
+                .then(files => {
+                    if (files.length === 0) return;
+                    
+                    document.getElementById('emptyState').style.display = 'none';
+                    
+                    const isFirstLoad = photos.length === 0;
+                    photos = files;
+                    
+                    if (isFirstLoad) {
+                        currentIndex = photos.length - 1; // start with newest
+                        showSlide(currentIndex);
+                        startRotation();
+                    }
+                });
+        }
+
+        function startRotation() {
+            slideInterval = setInterval(() => {
+                if (!isPaused && photos.length > 0) {
+                    currentIndex = (currentIndex - 1 + photos.length) % photos.length;
+                    showSlide(currentIndex);
+                }
+            }, 6000);
+        }
+
+        function extractUploader(metaTags) {
+            try {
+                const tags = JSON.parse(metaTags || '[]');
+                const t = tags.find(t => t.startsWith('uploader:'));
+                return t ? t.split(':')[1] : null;
+            } catch { return null; }
+        }
+
+        function showSlide(index) {
+            const p = photos[index];
+            if (!p) return;
+
+            const container = document.getElementById('slideContainer');
+            
+            // Clean up old slides
+            const oldSlides = container.querySelectorAll('.slide-image');
+            oldSlides.forEach(s => {
+                s.classList.remove('active');
+                setTimeout(() => s.remove(), 2000);
+            });
+
+            // New slide
+            const img = document.createElement('img');
+            img.className = 'slide-image';
+            img.src = p.url;
+            container.appendChild(img);
+
+            // Trigger animation
+            setTimeout(() => {
+                img.classList.add('active');
+                document.getElementById('bgBlur').style.backgroundImage = `url(${p.thumbnail || p.url})`;
+            }, 50);
+
+            // Update Caption
+            const who = p.uploaderName || extractUploader(p.metaTags) || 'GUEST CAPTURE';
+            document.getElementById('captionUploader').textContent = who.toUpperCase();
+            document.getElementById('captionNote').textContent = p.note || '';
+            document.getElementById('slideCaption').classList.add('active');
+        }
+    </script>
+</body>
+</html>

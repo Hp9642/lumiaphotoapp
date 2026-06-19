@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Lumina Dashboard</title>
+    <meta name="description" content="Manage your event.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="shortcut icon" href="/images/app-icon.png" type="image/x-icon" />
+    <script src="/js/qrcode.min.js"></script>
+</head>
+<body>
+    <nav>
+        <a href="/portal" class="brand">LUMINA / <span id="navEventName" style="color: var(--text-muted); font-weight: 300;">EVENT</span></a>
+        <div class="nav-links">
+            <a href="javascript:void(0)" id="logoutBtn" style="text-decoration: none; text-transform: uppercase; letter-spacing: 0.15em; font-size: 0.75rem; font-weight: 600;">LOGOUT</a>
+        </div>
+    </nav>
+
+    <div class="page-container">
+        <div class="dashboard-grid">
+            
+            <!-- Sidebar -->
+            <div class="dashboard-sidebar">
+                <h3 class="sidebar-title">COMMAND CENTER</h3>
+                <a href="#stats" class="nav-item active">Overview</a>
+                <a href="#settings" class="nav-item">Event Settings</a>
+                <a href="#sponsor" class="nav-item">Sponsor Config</a>
+                <a href="#gallery" class="nav-item">Moderate Gallery</a>
+                <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 1rem 0;">
+                <a href="javascript:void(0)" class="nav-item" id="navViewSlideshow" style="color: var(--accent-ice);">Launch Slideshow</a>
+                <a href="javascript:void(0)" class="nav-item" id="navViewCamera">Open Camera</a>
+                <a href="javascript:void(0)" class="nav-item" id="navViewGallery">Open Gallery</a>
+            </div>
+
+            <!-- Main Content -->
+            <div class="dashboard-content">
+                
+                <h1 class="section-title" id="pageTitle">DASHBOARD</h1>
+
+                <!-- Stats Overview -->
+                <div class="card" id="stats">
+                    <h2 class="card-title">Live Statistics</h2>
+                    <div class="stat-group">
+                        <div>
+                            <span class="stat-value" id="statPhotos">0</span>
+                            <span class="stat-label">Captures</span>
+                        </div>
+                        <div>
+                            <span class="stat-value" id="statViews">0</span>
+                            <span class="stat-label">Gallery Views</span>
+                        </div>
+                        <div>
+                            <span class="stat-value" id="statRolls">0</span>
+                            <span class="stat-label">Active Guests</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Settings -->
+                <div class="card" id="settings">
+                    <h2 class="card-title">Event Controls</h2>
+                    
+                    <form id="updateEventForm">
+                        <div class="form-group">
+                            <label class="form-label">Event Name</label>
+                            <input type="text" id="cfgEventName" class="modern-input">
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding: 1rem 0; border-top: 1px solid var(--border-subtle);">
+                            <div>
+                                <h4 style="font-family: var(--font-heading); font-size: 1.1rem; margin-bottom: 4px;">Camera Access</h4>
+                                <p style="color: var(--text-muted); font-size: 0.85rem;">Allow guests to take new photos</p>
+                            </div>
+                            <input type="checkbox" id="cfgCameraEnabled" style="width: 24px; height: 24px; accent-color: var(--accent-ice);">
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-top: 1px solid var(--border-subtle);">
+                            <div>
+                                <h4 style="font-family: var(--font-heading); font-size: 1.1rem; margin-bottom: 4px;">Live Slideshow</h4>
+                                <p style="color: var(--text-muted); font-size: 0.85rem;">Show new photos as they arrive</p>
+                            </div>
+                            <input type="checkbox" id="cfgSlideshowEnabled" style="width: 24px; height: 24px; accent-color: var(--accent-ice);">
+                        </div>
+
+                        <button type="submit" class="btn-magnetic" style="margin-top: 2rem; background: var(--text-light); color: var(--bg-dark);">SAVE CHANGES</button>
+                    </form>
+                </div>
+
+                <!-- QR Code & Setup -->
+                <div class="card" id="qr-setup">
+                    <h2 class="card-title">Guest Access</h2>
+                    <div style="display: flex; gap: 3rem; align-items: center;">
+                        <div id="qrCodeContainer" style="background: #fff; padding: 1rem; border-radius: 8px;"></div>
+                        <div>
+                            <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 1.1rem; line-height: 1.6;">Guests can scan this code or visit the link below to access the event darkroom.</p>
+                            <input type="text" id="cameraLink" class="modern-input" readonly style="margin-bottom: 1rem;">
+                            <button id="copyLinkBtn" class="btn-magnetic btn-outline">COPY LINK</button>
+                            <button id="downloadQrBtn" class="btn-magnetic" style="margin-left: 1rem; background: var(--accent-ice); color: #000;">DOWNLOAD QR</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sponsor Config -->
+                <div class="card" id="sponsor">
+                    <h2 class="card-title">Brand & Sponsorship</h2>
+                    <form id="updateSponsorForm">
+                        <div class="form-group">
+                            <label class="form-label">Sponsor Name (Button Text)</label>
+                            <input type="text" id="cfgSponsorText" class="modern-input" placeholder="e.g. SPONSORED BY X">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sponsor URL</label>
+                            <input type="url" id="cfgSponsorLink" class="modern-input" placeholder="https://...">
+                        </div>
+                        <button type="submit" class="btn-magnetic">SAVE SPONSOR</button>
+                    </form>
+                </div>
+
+                <!-- Moderation -->
+                <div class="card" id="gallery">
+                    <h2 class="card-title">Photo Moderation</h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <p style="color: var(--text-muted);">Click any photo to delete it from the event.</p>
+                        <button id="deleteEventBtn" class="btn-magnetic" style="background: transparent; border: 1px solid #ff4444; color: #ff4444; padding: 0.5rem 1rem; font-size: 0.75rem;">DELETE EVENT</button>
+                    </div>
+                    <div id="adminPhotoGrid" class="masonry-grid" style="padding: 0;">
+                        <!-- Photos injected via JS -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Hidden Modals & Toasts -->
+    <div class="fullscreen-overlay" id="slideshowModal" style="display: none;">
+        <div style="width: 100%; max-width: 500px; background: var(--bg-card); padding: 3rem; border-radius: 12px; text-align: left;">
+            <h2 style="font-size: 2rem; color: var(--accent-ice); margin-bottom: 1rem; font-family: var(--font-heading);">LAUNCH SLIDESHOW</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem; line-height: 1.6;">The slideshow is designed for a projector or large display. Leave this window open full-screen during your event.</p>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn-magnetic" id="closeSlideshowModalBtn" style="flex: 1; background: transparent; border: 1px solid var(--border-subtle); color: #fff;">CANCEL</button>
+                <button class="btn-magnetic" id="startSlideshowBtn" style="flex: 2; background: var(--accent-ice); color: #000;">START DISPLAY</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 12px 24px; border-radius: 100px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: none; z-index: 9999;">
+        <div class="message"></div>
+    </div>
+
+    <script src="/js/editorial.js"></script>
+    <script src="/js/manage.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const eventId = window.location.pathname.split('/')[1];
+            if (!eventId) return;
+
+            // Auth Check
+            fetch('/api/auth/me').then(r => r.json()).then(data => {
+                if (!data.user) {
+                    window.location.href = '/portal';
+                }
+            }).catch(() => { window.location.href = '/portal'; });
+
+            // Logout Logic
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    await fetch('/api/auth/logout', { method: 'POST' });
+                    window.location.href = '/portal';
+                });
+            }
+
+            document.getElementById('navEventName').innerText = eventId.toUpperCase();
+            if (document.getElementById('manageEventCode')) {
+                document.getElementById('manageEventCode').innerText = eventId;
+            }
+
+            const cameraUrl = window.location.origin + '/' + eventId + '/upload';
+            const linkInput = document.getElementById('cameraLink');
+            if (linkInput) linkInput.value = cameraUrl;
+
+            // Generate QR
+            const qrContainer = document.getElementById('qrCodeContainer');
+            if (qrContainer && typeof QRCode !== 'undefined') {
+                new QRCode(qrContainer, {
+                    text: cameraUrl,
+                    width: 180,
+                    height: 180,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+            }
+
+            // Copy Link
+            const copyBtn = document.getElementById('copyLinkBtn');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', () => {
+                    linkInput.select();
+                    document.execCommand('copy');
+                    const origText = copyBtn.innerText;
+                    copyBtn.innerText = 'COPIED!';
+                    setTimeout(() => copyBtn.innerText = origText, 2000);
+                });
+            }
+
+            // Download QR
+            const downloadBtn = document.getElementById('downloadQrBtn');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', () => {
+                    const img = qrContainer.querySelector('img');
+                    if (!img) return;
+                    const a = document.createElement('a');
+                    a.href = img.src;
+                    a.download = 'Lumina_QR_' + eventId + '.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                });
+            }
+
+            // Stats polling placeholder
+            fetch('/api/events/' + eventId + '/stats')
+                .then(r => r.json())
+                .then(data => {
+                    if(data.total !== undefined) {
+                        if(document.getElementById('statTotalPhotos')) document.getElementById('statTotalPhotos').innerText = data.total;
+                        if(document.getElementById('statTotalGuests')) document.getElementById('statTotalGuests').innerText = data.guests ? data.guests.length : 0;
+                    }
+                }).catch(e => console.error('Stats error:', e));
+
+            // Event Controls & Sidebar Links
+            const bindClick = (id, url) => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('click', () => window.location.href = url);
+            };
+            bindClick('navViewSlideshow', '/' + eventId + '/slideshow');
+            bindClick('navViewCamera', '/' + eventId + '/upload');
+            bindClick('navViewGallery', '/' + eventId + '/view');
+            bindClick('startSlideshowBtn', '/' + eventId + '/slideshow');
+            bindClick('openCameraBtn', '/' + eventId + '/upload');
+
+            // Settings Logic
+            let currentConfig = {};
+            const nameInput = document.getElementById('cfgEventName');
+            const camToggle = document.getElementById('cfgCameraEnabled');
+            const slideToggle = document.getElementById('cfgSlideshowEnabled');
+
+            fetch('/api/config?eventId=' + eventId)
+                .then(r => r.json())
+                .then(cfg => {
+                    currentConfig = cfg;
+                    if (nameInput) nameInput.value = cfg.eventName || '';
+                    if (camToggle) camToggle.checked = !!cfg.enableUpload;
+                    if (slideToggle) slideToggle.checked = !!cfg.enableDownload; // Using download flag for slideshow
+                });
+
+            const saveConfig = () => {
+                const payload = {
+                    ...currentConfig,
+                    eventName: nameInput ? nameInput.value : currentConfig.eventName,
+                    enableUpload: camToggle ? (camToggle.checked ? 1 : 0) : 1,
+                    enableDownload: slideToggle ? (slideToggle.checked ? 1 : 0) : 1
+                };
+                fetch('/api/config/save?eventId=' + eventId, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            };
+
+            if (nameInput) nameInput.addEventListener('blur', saveConfig);
+            if (camToggle) camToggle.addEventListener('change', saveConfig);
+            if (slideToggle) slideToggle.addEventListener('change', saveConfig);
+        });
+    </script>
+</body>
+</html>
+

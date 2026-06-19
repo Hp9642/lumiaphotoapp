@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Lumina — The Shared Album</title>
+    <meta name="description" content="Capture your day through everyone's eyes. The modern digital disposable camera.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Link to the Global Modern CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="shortcut icon" href="images/app-icon.png" type="image/x-icon" />
+</head>
+<body>
+
+    <!-- ── Navigation ── -->
+    <nav>
+        <a href="/" class="brand">Lumina</a>
+        <div class="nav-links">
+            <a href="/pricing">Pricing</a>
+            <a href="#experience">Experience</a>
+            <a href="javascript:document.getElementById('guestEventCode').focus()">Find Event</a>
+        </div>
+        <a href="/portal" class="btn-magnetic" style="padding: 1.2rem 2.5rem; font-size: 0.75rem; background: var(--text-light); color: #000;">
+            Host Portal
+        </a>
+    </nav>
+
+    <!-- ── Hero Section ── -->
+    <section class="hero">
+        
+        <div class="hero-content">
+            <h1 class="hero-title">
+                Capture<br>
+                <span>The</span><br>
+                Unseen
+            </h1>
+            <p class="hero-desc">
+                No apps to download. No accounts to create. Lumina empowers your guests to shoot authentic, unfiltered moments through a premium digital viewfinder.
+            </p>
+            
+            <div style="display: flex; gap: 1rem; align-items: center; margin-top: 3rem;">
+                <!-- Event Code Joiner -->
+                <div style="display: flex; border-bottom: 2px solid var(--text-muted); padding-bottom: 5px;">
+                    <input type="text" id="guestEventCode" placeholder="Enter Event Code" style="background: transparent; border: none; color: var(--text-light); font-family: var(--font-body); font-size: 1rem; outline: none; text-transform: uppercase; width: 180px;">
+                    <button type="button" id="joinEventBtn" style="background: transparent; border: none; color: var(--accent-ice); font-family: var(--font-heading); font-size: 1rem; cursor: none; text-transform: uppercase; font-weight: 700;">Join</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="hero-visual">
+            <div class="hero-img-container hero-img-main">
+                <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800&auto=format&fit=crop" class="parallax-img" data-speed="0.2" alt="Wedding couple dancing">
+            </div>
+            <div class="hero-img-container hero-img-secondary">
+                <img src="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=600&auto=format&fit=crop" class="parallax-img" data-speed="0.35" alt="Champagne toast">
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Core Features ── -->
+    <section class="features" id="experience">
+        
+        <!-- Feature 1 -->
+        <article class="feature-block">
+            <div class="feature-text">
+                <span class="feature-number">01</span>
+                <h2 class="feature-title">Scan.<br>Shoot.<br>Wait.</h2>
+                <p class="feature-desc">
+                    Your guests scan a QR code at their table to instantly open the retro viewfinder. No installation required. They simply wind the virtual film and shoot.
+                </p>
+            </div>
+            <div class="feature-img-wrapper">
+                <img src="https://images.unsplash.com/photo-1520854221256-17451cc331bf?q=80&w=1000&auto=format&fit=crop" class="parallax-img" data-speed="-0.15" alt="Guest taking a photo">
+            </div>
+        </article>
+
+        <!-- Feature 2 -->
+        <article class="feature-block reversed">
+            <div class="feature-text">
+                <span class="feature-number">02</span>
+                <h2 class="feature-title">The<br>Darkroom.</h2>
+                <p class="feature-desc">
+                    All captured rolls are locked in our digital darkroom. As anticipation builds, the photos are developed with stunning analog film grain, color grading, and authentic light leaks.
+                </p>
+            </div>
+            <div class="feature-img-wrapper">
+                <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1000&auto=format&fit=crop" class="parallax-img" data-speed="-0.2" alt="Elegant wedding sparkler sendoff">
+            </div>
+        </article>
+
+        <!-- Feature 3 -->
+        <article class="feature-block" style="margin-bottom: 10rem;">
+            <div class="feature-text">
+                <span class="feature-number">03</span>
+                <h2 class="feature-title">A Shared<br>Memory.</h2>
+                <p class="feature-desc">
+                    When the countdown expires, the gallery unlocks. Guests can view the live slideshow on a projector, or browse the complete polaroid deck from their phones.
+                </p>
+                <a href="/portal" class="btn-magnetic" style="margin-top: 3rem;">Create Your Event</a>
+            </div>
+            <div class="feature-img-wrapper">
+                <img src="https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=1000&auto=format&fit=crop" class="parallax-img" data-speed="-0.15" alt="Bride and groom laughing">
+            </div>
+        </article>
+
+    </section>
+
+    <!-- Join Event Logic -->
+    <script>
+        document.getElementById('joinEventBtn').addEventListener('click', () => {
+            const code = document.getElementById('guestEventCode').value.trim();
+            if (code) {
+                window.location.href = '/' + code + '/upload';
+            } else {
+                alert("Please enter an event code.");
+            }
+        });
+        document.getElementById('guestEventCode').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('joinEventBtn').click();
+        });
+    </script>
+
+    <!-- Editorial Micro-Interactions Script -->
+    <script src="js/editorial.js"></script>
+
+</body>
+</html>

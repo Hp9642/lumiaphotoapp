@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Lumina Camera</title>
+    <meta name="description" content="Capture your moments live.">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="shortcut icon" href="/images/app-icon.png" type="image/x-icon" />
+</head>
+<body style="background: #000; margin: 0; overflow: hidden;">
+    
+    <div class="camera-container" id="viewfinderContainer">
+        
+        <div class="camera-frame">
+            <!-- Video Feed -->
+            <video id="cameraStream" autoplay playsinline muted></video>
+            <canvas id="photoCanvas" style="display:none;"></canvas>
+
+            <!-- Minimalist Reticles -->
+            <div class="reticle reticle-tl"></div>
+            <div class="reticle reticle-tr"></div>
+            <div class="reticle reticle-bl"></div>
+            <div class="reticle reticle-br"></div>
+
+            <!-- Top HUD -->
+            <div class="camera-hud-top">
+                <a href="javascript:void(0)" onclick="window.location.href='/' + window.location.pathname.split('/')[1] + '/thankyou'" style="text-decoration: none; color: #fff; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;">
+                    <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    EXIT
+                </a>
+                <div class="hud-text">
+                    LUMINA <span class="hud-accent">PRO</span>
+                </div>
+                <div class="hud-text" style="font-size: 1rem;">
+                    EXP <span id="shotsCount" class="hud-accent">25</span>
+                </div>
+            </div>
+
+            <!-- Filter Selector -->
+            <div style="position: absolute; bottom: 130px; width: 100%; display: flex; justify-content: center; gap: 1rem; z-index: 20; flex-wrap: wrap; padding: 0 1rem;">
+                <button class="film-stock-btn active" data-stock="portra" style="background: transparent; border: none; color: var(--text-muted); font-family: var(--font-heading); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: none; transition: color 0.3s;">PORTRA</button>
+                <button class="film-stock-btn" data-stock="vintage" style="background: transparent; border: none; color: var(--text-muted); font-family: var(--font-heading); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: none; transition: color 0.3s;">VINTAGE</button>
+                <button class="film-stock-btn" data-stock="cool" style="background: transparent; border: none; color: var(--text-muted); font-family: var(--font-heading); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: none; transition: color 0.3s;">COOL</button>
+                <button class="film-stock-btn" data-stock="mono" style="background: transparent; border: none; color: var(--text-muted); font-family: var(--font-heading); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: none; transition: color 0.3s;">MONO</button>
+                <button class="film-stock-btn" data-stock="noir" style="background: transparent; border: none; color: var(--text-muted); font-family: var(--font-heading); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: none; transition: color 0.3s;">NOIR</button>
+                <button class="film-stock-btn" data-stock="original" style="background: transparent; border: none; color: var(--text-muted); font-family: var(--font-heading); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: none; transition: color 0.3s;">RAW</button>
+            </div>
+
+            <!-- Bottom Controls -->
+            <div class="camera-controls">
+                
+                <button id="toggleCameraBtn" style="position: absolute; left: 40px; background: transparent; border: none; color: #fff; opacity: 0.8; transition: opacity 0.2s;">
+                    <svg style="width: 28px; height: 28px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                </button>
+
+                <!-- Clean Shutter Button -->
+                <button class="shutter-btn" id="shutterBtn"></button>
+
+                <button id="galleryUploadBtn" style="position: absolute; right: 40px; background: transparent; border: none; color: #fff; opacity: 0.8; transition: opacity 0.2s;">
+                    <svg style="width: 28px; height: 28px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg>
+                </button>
+
+            </div>
+
+            <!-- Status Overlays -->
+            <div id="uploadStatusText" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-size: 0.85rem; font-weight: 700; color: var(--accent-ice); background: rgba(10, 9, 8, 0.9); padding: 12px 24px; border-radius: 4px; display: none; z-index: 120; letter-spacing: 2px; text-transform: uppercase;">
+                PROCESSING...
+            </div>
+            
+            <div class="upload-indicator-bar" id="viewfinderProgressBar" style="position: absolute; top: 0; left: 0; width: 0%; height: 3px; background: var(--accent-ice); z-index: 150; transition: width 0.3s ease;"></div>
+        </div>
+
+    </div>
+
+    <!-- Hidden Modals & Inputs -->
+    <input id="imageFiles" type="file" accept="image/*, image/heic, video/*" multiple style="display: none;" />
+
+    <div class="fullscreen-overlay" id="hypeScreenModal" style="display: none;">
+        <h2 style="font-size: 2rem; color: var(--accent-ice); margin-bottom: 1rem;">CAPTURED</h2>
+        <p id="hypeRollStatus" style="font-size: 1.2rem; color: #fff; margin-bottom: 2rem;">Photo safely in the darkroom.</p>
+        <button class="btn-magnetic" id="hypeNextShotBtn" style="border: 1px solid var(--accent-ice); background: transparent; color: var(--accent-ice);">CONTINUE</button>
+    </div>
+
+    <div class="fullscreen-overlay" id="signOffModal" style="display: none;">
+        <h2 style="font-size: 2rem; color: var(--accent-ice); margin-bottom: 1rem;">SIGN YOUR ROLL</h2>
+        <div style="width: 100%; max-width: 400px; text-align: left;">
+            <div class="form-group">
+                <label class="form-label">Name</label>
+                <input type="text" id="signNameInput" class="modern-input" placeholder="e.g. Sarah">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" id="signEmailInput" class="modern-input" placeholder="For the gallery link">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Wish</label>
+                <input type="text" id="signWishInput" class="modern-input" placeholder="A brief note">
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button class="btn-magnetic" id="skipSignOffBtn" style="flex: 1; background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2);">SKIP</button>
+                <button class="btn-magnetic" id="submitSignOffBtn" style="flex: 2; background: var(--accent-ice); color: #000;">DEVELOP ROLL</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 12px 24px; border-radius: 100px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: none; z-index: 9999;">
+        <div class="message"></div>
+    </div>
+
+    <script src="/js/scripts.js?v=3"></script>
+    <script src="/js/editorial.js"></script>
+</body>
+</html>

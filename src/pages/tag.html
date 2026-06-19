@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Tag photos ≫ Annika & Andy's Wedding</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="css/styles.css">
+        <link rel="stylesheet" href="css/manage.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Mulish:200,600">
+        <link rel="shortcut icon" href="images/app-icon.png" type="image/x-icon" />
+    </head>
+    <body>
+        <header>
+            <a href="/manage" class="btn-pill btn-pill-secondary" style="padding: 0.4rem 1rem; font-size: 0.7rem; margin-bottom: 1.5rem; display: inline-flex;">← Back to Dashboard</a>
+            <h1>Tag Photos</h1>
+        </header>
+        <section>
+            <ul 
+                id="gallery" 
+                class="manageGallery tagGallery" 
+                data-next-page="" 
+                data-done="false" 
+                data-page-size="20">
+            </ul>
+
+            <div id="spinner" class="hidden"><div></div></div>
+            
+            <p id="refreshLink" class="hidden">
+                <span class="message">No more photos to show.</span><br />
+                <a class="action" href="#">Refresh to see newer photos</a>
+            </p>
+            
+            <form class="manageCommitForm" id="manageTagForm" method="get" action="/tag">
+                <fieldset>
+                    <input 
+                        type="text" 
+                        name="username" 
+                        value="admin" 
+                        autocomplete="username" 
+                    />
+                    <label for="manageTagPassword">
+                        Password:
+                        <input 
+                            type="password" 
+                            name="password" 
+                            id="manageTagPassword"
+                            class="managePassword"
+                            autocomplete="current-password"
+                        />
+                    </label>
+                    <button 
+                        id="manageTagSaveButton" 
+                        class="button manageButton manageCommitButton manageSaveButton requiresPassword"
+                        data-call-to-action="Save all changes"
+                        disabled>
+                        Save all changes
+                    </button>
+                </fieldset>
+            </form>
+        </section>
+        
+        <div id="toast">
+            <div class="timer"></div>
+            <div class="message"></div>
+        </div>
+
+        <template id="galleryItem">
+            <li>
+                <a></a>
+                <p class="bucketPath"></p>
+                <div class="tagGroup peopleTagGroup">
+                    People: 
+                    <ul class="peopleTags"></ul>
+                </div>
+                <div class="tagGroup metaTagGroup">
+                    Tags: 
+                    <ul class="metaTags"></ul>
+                </div>
+            </li>
+        </template>
+
+        <script src="js/scripts.js"></script>
+        <script src="js/manage.js"></script>
+        <script src="js/tag.js"></script>
+    </body>
+</html>
+
