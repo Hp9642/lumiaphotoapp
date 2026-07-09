@@ -156,10 +156,10 @@ app.get('/api/events/:eventId/stats', async (req, res) => {
     const eventId = req.params.eventId.toUpperCase();
     try {
         const rowsRes = await pool.query(
-            SELECT uploader_name, COUNT(*) as photo_count 
+            `SELECT uploader_name, COUNT(*) as photo_count 
             FROM photos WHERE event_id = $1 
             GROUP BY uploader_name 
-            ORDER BY photo_count DESC
+            ORDER BY photo_count DESC`
         , [eventId]);
         const countRes = await pool.query('SELECT COUNT(*) as total FROM photos WHERE event_id = $1', [eventId]);
         
