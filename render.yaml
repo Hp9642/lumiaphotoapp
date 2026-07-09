@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: lumina-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lumina-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLOUDINARY_URL
+        sync: false
+
+databases:
+  - name: lumina-db
+    plan: free
