@@ -103,7 +103,7 @@ app.get('/api/server-info', (req, res) => {
     const lanIp = getLanIp();
     res.json({
         ip: lanIp,
-        url: http:// + lanIp + : + PORT
+        url: `http://${lanIp}:${PORT}`
     });
 });
 
