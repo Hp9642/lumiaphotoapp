@@ -8,15 +8,15 @@ const pool = new Pool({
 
 async function initializeSchema() {
     try {
-        await pool.query(
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
                 email TEXT UNIQUE,
                 password_hash TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        );
-        await pool.query(
+        `);
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS events (
                 id TEXT PRIMARY KEY,
                 name TEXT,
@@ -32,8 +32,8 @@ async function initializeSchema() {
                 sponsor_text TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        );
-        await pool.query(
+        `);
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS photos (
                 id SERIAL PRIMARY KEY,
                 event_id TEXT REFERENCES events(id) ON DELETE CASCADE,
@@ -43,7 +43,7 @@ async function initializeSchema() {
                 is_approved INTEGER DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        );
+        `);
         console.log('Connected to Postgres and schema initialized.');
     } catch (err) {
         console.error('Error initializing Postgres schema', err.message);
