@@ -216,5 +216,5 @@ app.get('/:eventId/', (req, res) => res.redirect('/' + req.params.eventId + '/up
 app.get('/:eventId/manage/', (req, res) => res.redirect('/' + req.params.eventId + '/manage'));
 
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(Lumina Server running on port  + PORT);
+    console.log('Lumina Server running on port ' + PORT);
 });
